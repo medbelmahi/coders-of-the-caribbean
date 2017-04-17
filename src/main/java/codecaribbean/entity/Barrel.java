@@ -11,4 +11,15 @@ public class Barrel extends Entity{
         super(entityId, x, y);
         this.amount = arg1;
     }
+
+    @Override
+    public void update(int[] args) {
+        super.update(args);
+        this.amount = args[3];
+    }
+
+    @Override
+    public boolean appropriateTO(int i) {
+        return false;
+    }
 }

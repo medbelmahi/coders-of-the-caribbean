@@ -1,5 +1,6 @@
 package codecaribbean.game;
 
+import codecaribbean.entity.Entity;
 import codecaribbean.entity.factory.EntityFactory;
 import codecaribbean.entity.factory.EntityType;
 
@@ -13,6 +14,8 @@ class Player {
 
     public static void main(String args[]) {
         Scanner in = new Scanner(System.in);
+
+        Game pirateGame = new Game();
 
         // game loop
         while (true) {
@@ -28,7 +31,7 @@ class Player {
                 int arg3 = in.nextInt();
                 int arg4 = in.nextInt();
 
-                EntityFactory.crete(EntityType.valueOf(entityType), entityId, x, y, arg1, arg2, arg3, arg4);
+                pirateGame.updateOrCreateEntity(EntityType.valueOf(entityType), entityId, x, y, arg1, arg2, arg3, arg4);
             }
             for (int i = 0; i < myShipCount; i++) {
 
