@@ -9,8 +9,8 @@ import java.util.*;
  */
 public class OneFileMaker {
     
-    public static final String PLAYER_FILE_PATH = "D:\\CodinGame\\coders-of-the-caribbean\\src\\main\\java\\playerFile\\Player.java";
-    public static final String PACKAGE_PATH = "D:\\CodinGame\\coders-of-the-caribbean\\src\\main\\java\\codecaribbean";
+    public static final String PLAYER_FILE_PATH = "E:\\CodinGame\\coders-of-the-caribbean\\src\\main\\java\\playerFile\\Player.java";
+    public static final String PACKAGE_PATH = "E:\\CodinGame\\coders-of-the-caribbean\\src\\main\\java\\codecaribbean";
     public static final int UPDATE_RANGE_IN_SECOND = 5; //seconds
     
     public static void main(final String[] args) {

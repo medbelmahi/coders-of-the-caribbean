@@ -1,5 +1,9 @@
 package codecaribbean.entity;
 
+import codecaribbean.command.Command;
+import codecaribbean.command.MoveCommand;
+import codecaribbean.game.Pirate;
+
 /**
  * Created by MedBelmahi on 15/04/2017.
  */
@@ -19,7 +23,7 @@ public class Barrel extends Entity{
     }
 
     @Override
-    public boolean appropriateTO(int i) {
-        return false;
+    public void updateData(Pirate me, Pirate opponent) {
+        me.addBarrels(this);
     }
 }

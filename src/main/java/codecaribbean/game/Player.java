@@ -1,5 +1,6 @@
 package codecaribbean.game;
 
+import codecaribbean.command.Command;
 import codecaribbean.entity.Entity;
 import codecaribbean.entity.factory.EntityFactory;
 import codecaribbean.entity.factory.EntityType;
@@ -19,6 +20,9 @@ class Player {
 
         // game loop
         while (true) {
+
+            pirateGame.nextTurn();
+
             int myShipCount = in.nextInt(); // the number of remaining ships
             int entityCount = in.nextInt(); // the number of entities (e.g. ships, mines or cannonballs)
             for (int i = 0; i < entityCount; i++) {
@@ -33,12 +37,16 @@ class Player {
 
                 pirateGame.updateOrCreateEntity(EntityType.valueOf(entityType), entityId, x, y, arg1, arg2, arg3, arg4);
             }
+
+            pirateGame.processing();
+
             for (int i = 0; i < myShipCount; i++) {
 
                 // Write an action using System.out.println()
                 // To debug: System.err.println("Debug messages...");
-
-                System.out.println("MOVE 11 10"); // Any valid action, such as "WAIT" or "MOVE x y"
+                Command command = pirateGame.doAction(i);
+                //System.out.println("MOVE 11 10"); // Any valid action, such as "WAIT" or "MOVE x y"
+                System.out.println(command.toString());
             }
         }
     }

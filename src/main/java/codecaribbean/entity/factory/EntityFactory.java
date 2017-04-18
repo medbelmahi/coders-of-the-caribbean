@@ -13,7 +13,8 @@ public class EntityFactory {
         switch (entityType) {
             case SHIP : return new Ship(entityId, x, y, arg1, arg2, arg3, arg4);
             case BARREL : return new Barrel(entityId, x, y, arg1);
+            default:
+                throw new IllegalArgumentException("Entity type not exist");
         }
-        return null;
     }
 }

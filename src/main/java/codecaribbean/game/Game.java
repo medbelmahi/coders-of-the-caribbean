@@ -1,5 +1,6 @@
 package codecaribbean.game;
 
+import codecaribbean.command.Command;
 import codecaribbean.entity.Entity;
 import codecaribbean.entity.factory.EntityFactory;
 import codecaribbean.entity.factory.EntityType;
@@ -15,6 +16,7 @@ import java.util.Map;
 class Game {
     private Pirate me;
     private Pirate opponent;
+    private int currentTurn;
 
     private Grid grid;
 
@@ -22,6 +24,9 @@ class Game {
 
     Game() {
         this.entities = new HashMap<>();
+        this.currentTurn = 0;
+        this.me = new Pirate(1);
+        this.opponent = new Pirate(0);
     }
 
     private void addEntity(int id, Entity entity) {
@@ -38,4 +43,27 @@ class Game {
         }
     }
 
+    public void nextTurn() {
+        this.currentTurn++;
+    }
+
+    public Command doAction(int i) {
+        return me.getAction(i);
+    }
+
+    public void processing() {
+        updateData();
+        me.buildCommands();
+    }
+
+    private void updateData() {
+        for (Integer integer : entities.keySet()) {
+            final Entity entity = entities.get(integer);
+            if (!entity.isDead(currentTurn)) {
+                entity.updateData(me, opponent);
+            } else {
+                entities.remove(entity);
+            }
+        }
+    }
 }

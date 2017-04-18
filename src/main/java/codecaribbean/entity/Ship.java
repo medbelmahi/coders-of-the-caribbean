@@ -1,5 +1,6 @@
 package codecaribbean.entity;
 
+import codecaribbean.command.Command;
 import codecaribbean.game.Pirate;
 
 /**
@@ -11,6 +12,7 @@ public class Ship extends Entity {
     private int rumStock;
     private Pirate pirate;
     private int intPirate;
+    private Command currentOrder;
 
     public Ship(int entityId, int... args) {
         super(entityId, args[0], args[1]);
@@ -29,12 +31,22 @@ public class Ship extends Entity {
         this.intPirate = args[6];
     }
 
-    @Override
-    public boolean appropriateTO(int i) {
+    private boolean appropriateTO(int i) {
         return intPirate == i;
     }
 
-    public void setPirate(Pirate pirate) {
-        this.pirate = pirate;
+    @Override
+    public void updateData(Pirate me, Pirate opponent) {
+        if (me.isMyShip(intPirate)) {
+            this.pirate = me;
+            me.addShip(this);
+        } else {
+            this.pirate = opponent;
+            opponent.addShip(this);
+        }
+    }
+
+    public void setOrder(Command command) {
+        this.currentOrder = command;
     }
 }
