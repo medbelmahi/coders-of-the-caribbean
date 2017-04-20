@@ -15,7 +15,7 @@ public class Ship extends Entity {
     private Command currentOrder;
 
     public Ship(int entityId, int... args) {
-        super(entityId, args[0], args[1]);
+        super(entityId, args[0], args[1], args[6]);
         this.orientation = args[2];
         this.speed = args[3];
         this.rumStock = args[4];
@@ -48,5 +48,9 @@ public class Ship extends Entity {
 
     public void setOrder(Command command) {
         this.currentOrder = command;
+    }
+
+    public Command getOrder() {
+        return this.currentOrder;
     }
 }

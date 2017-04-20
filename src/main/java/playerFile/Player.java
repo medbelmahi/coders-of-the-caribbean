@@ -109,8 +109,8 @@ class Barrel extends Entity{
 
     private int amount;
 
-    public Barrel(int entityId, int x, int y, int arg1) {
-        super(entityId, x, y);
+    public Barrel(int entityId, int x, int y, int arg1, int currentTurn) {
+        super(entityId, x, y, currentTurn);
         this.amount = arg1;
     }
 
@@ -136,13 +136,14 @@ abstract class Entity {
     public int id;
     private int currentTurn;
 
-    public Entity(int entityId, int x, int y) {
+    public Entity(int entityId, int x, int y, int currentTurn) {
         this.id = entityId;
         this.coordinate = new Coordinate(x, y);
-        this.currentTurn = 0;
+        this.currentTurn = currentTurn;
     }
 
     public void update(int[] args) {
+        nextTurn();
         this.id = args[0];
         this.coordinate.update(args[1], args[2]);
     }
@@ -166,6 +167,9 @@ abstract class Entity {
         return new MoveCommand(this, first.coordinate);
     }
 
+    private void nextTurn() {
+        this.currentTurn++;
+    }
 }
 
 
@@ -175,11 +179,11 @@ abstract class Entity {
  * Created by MedBelmahi on 16/04/2017.
  */
 class EntityFactory {
-    public static Entity crete(EntityType entityType, int entityId, int x, int y, int arg1, int arg2, int arg3, int arg4) {
+    public static Entity crete(EntityType entityType, int entityId, int x, int y, int arg1, int arg2, int arg3, int arg4, int currentTurn) {
 
         switch (entityType) {
-            case SHIP : return new Ship(entityId, x, y, arg1, arg2, arg3, arg4);
-            case BARREL : return new Barrel(entityId, x, y, arg1);
+            case SHIP : return new Ship(entityId, x, y, arg1, arg2, arg3, arg4, currentTurn);
+            case BARREL : return new Barrel(entityId, x, y, arg1, currentTurn);
             default:
                 throw new IllegalArgumentException("Entity type not exist");
         }
@@ -208,7 +212,7 @@ class Ship extends Entity {
     private Command currentOrder;
 
     public Ship(int entityId, int... args) {
-        super(entityId, args[0], args[1]);
+        super(entityId, args[0], args[1], args[6]);
         this.orientation = args[2];
         this.speed = args[3];
         this.rumStock = args[4];
@@ -241,6 +245,10 @@ class Ship extends Entity {
 
     public void setOrder(Command command) {
         this.currentOrder = command;
+    }
+
+    public Command getOrder() {
+        return this.currentOrder;
     }
 }
 
@@ -283,7 +291,7 @@ class Game {
         if (entity != null) {
             entity.update(args);
         } else {
-            entity = EntityFactory.crete(entityType, args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+            entity = EntityFactory.crete(entityType, args[0], args[1], args[2], args[3], args[4], args[5], args[6], currentTurn);
             addEntity(args[0], entity);
         }
     }
@@ -302,11 +310,13 @@ class Game {
     }
 
     private void updateData() {
-        for (Integer integer : entities.keySet()) {
-            final Entity entity = entities.get(integer);
+        me.initTurn();
+        opponent.initTurn();
+        for (Entity entity : entities.values()) {
             if (!entity.isDead(currentTurn)) {
                 entity.updateData(me, opponent);
             } else {
+                System.err.println("remove entity");
                 entities.remove(entity);
             }
         }
@@ -339,7 +349,10 @@ class Pirate {
     }
 
     public Command getAction(int i) {
-        return ships.;
+        for (Ship ship : ships) {
+            return ship.getOrder();
+        }
+        return null;
     }
 
     public boolean isMyShip(int intPirate) {
@@ -367,12 +380,17 @@ class Pirate {
         });
 
         barrelTreeSet.addAll(barrels);
-
+        System.err.println("barrels size : " + barrels.size());
         return ship.moveTo(barrelTreeSet.first());
     }
 
     public void addBarrels(Barrel barrel) {
         this.barrels.add(barrel);
+    }
+
+    public void initTurn() {
+        ships.clear();
+        barrels.clear();
     }
 }
 

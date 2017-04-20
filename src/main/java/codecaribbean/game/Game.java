@@ -38,7 +38,7 @@ class Game {
         if (entity != null) {
             entity.update(args);
         } else {
-            entity = EntityFactory.crete(entityType, args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+            entity = EntityFactory.crete(entityType, args[0], args[1], args[2], args[3], args[4], args[5], args[6], currentTurn);
             addEntity(args[0], entity);
         }
     }
@@ -57,11 +57,13 @@ class Game {
     }
 
     private void updateData() {
-        for (Integer integer : entities.keySet()) {
-            final Entity entity = entities.get(integer);
+        me.initTurn();
+        opponent.initTurn();
+        for (Entity entity : entities.values()) {
             if (!entity.isDead(currentTurn)) {
                 entity.updateData(me, opponent);
             } else {
+                System.err.println("remove entity");
                 entities.remove(entity);
             }
         }

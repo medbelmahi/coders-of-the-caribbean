@@ -11,8 +11,8 @@ public class Barrel extends Entity{
 
     private int amount;
 
-    public Barrel(int entityId, int x, int y, int arg1) {
-        super(entityId, x, y);
+    public Barrel(int entityId, int x, int y, int arg1, int currentTurn) {
+        super(entityId, x, y, currentTurn);
         this.amount = arg1;
     }
 

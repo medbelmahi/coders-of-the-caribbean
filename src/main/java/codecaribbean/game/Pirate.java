@@ -25,7 +25,10 @@ public class Pirate {
     }
 
     public Command getAction(int i) {
-        return ships.;
+        for (Ship ship : ships) {
+            return ship.getOrder();
+        }
+        return null;
     }
 
     public boolean isMyShip(int intPirate) {
@@ -53,11 +56,16 @@ public class Pirate {
         });
 
         barrelTreeSet.addAll(barrels);
-
+        System.err.println("barrels size : " + barrels.size());
         return ship.moveTo(barrelTreeSet.first());
     }
 
     public void addBarrels(Barrel barrel) {
         this.barrels.add(barrel);
+    }
+
+    public void initTurn() {
+        ships.clear();
+        barrels.clear();
     }
 }

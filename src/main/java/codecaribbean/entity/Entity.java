@@ -14,13 +14,14 @@ public abstract class Entity {
     public int id;
     private int currentTurn;
 
-    public Entity(int entityId, int x, int y) {
+    public Entity(int entityId, int x, int y, int currentTurn) {
         this.id = entityId;
         this.coordinate = new Coordinate(x, y);
-        this.currentTurn = 0;
+        this.currentTurn = currentTurn;
     }
 
     public void update(int[] args) {
+        nextTurn();
         this.id = args[0];
         this.coordinate.update(args[1], args[2]);
     }
@@ -44,4 +45,7 @@ public abstract class Entity {
         return new MoveCommand(this, first.coordinate);
     }
 
+    private void nextTurn() {
+        this.currentTurn++;
+    }
 }
