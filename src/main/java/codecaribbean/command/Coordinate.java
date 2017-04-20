@@ -25,6 +25,8 @@ public class Coordinate {
     }
 
     public double distance(Coordinate coordinate) {
+        Math.abs()
+        return (Math.abs(a.x - b.x) + Math.abs(a.y - b.y) + Math.abs(a.z - b.z)) / 2
         return Point2D.distance(this.x, this.y, coordinate.x, coordinate.y);
     }
 }

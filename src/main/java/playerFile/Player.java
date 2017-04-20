@@ -49,7 +49,32 @@ class Coordinate {
     }
 
     public double distance(Coordinate coordinate) {
+        Math.abs()
+        return (Math.abs(a.x - b.x) + Math.abs(a.y - b.y) + Math.abs(a.z - b.z)) / 2
         return Point2D.distance(this.x, this.y, coordinate.x, coordinate.y);
+    }
+}
+
+
+/**
+ * Created by Mohamed BELMAHI on 20/04/2017.
+ */
+class FireCommand extends Command {
+
+    private Coordinate coordinate;
+    protected FireCommand(Coordinate coordinate) {
+        super("FIRE");
+        this.coordinate = coordinate;
+    }
+}
+
+
+/**
+ * Created by Mohamed BELMAHI on 20/04/2017.
+ */
+class MineCommand extends Command {
+    protected MineCommand() {
+        super("MINE");
     }
 }
 
@@ -129,6 +154,28 @@ class Barrel extends Entity{
 
 
 /**
+ * Created by Mohamed BELMAHI on 20/04/2017.
+ */
+class Cannonball extends Entity {
+
+    private int firedBy;
+    private int turns;
+
+    public Cannonball(int entityId, int... args) {
+        super(entityId, args[0], args[1], args[6]);
+        this.firedBy = args[2];
+        this.turns = args[3];
+    }
+
+    @Override
+    public void updateData(Pirate me, Pirate opponent) {
+
+    }
+}
+
+
+
+/**
  * Created by MedBelmahi on 15/04/2017.
  */
 abstract class Entity {
@@ -184,6 +231,8 @@ class EntityFactory {
         switch (entityType) {
             case SHIP : return new Ship(entityId, x, y, arg1, arg2, arg3, arg4, currentTurn);
             case BARREL : return new Barrel(entityId, x, y, arg1, currentTurn);
+            case CANNONBALL : return new Cannonball(entityId, x, y, arg1, arg2, currentTurn);
+            case MINE : return new Mine(entityId, currentTurn);
             default:
                 throw new IllegalArgumentException("Entity type not exist");
         }
@@ -195,7 +244,23 @@ class EntityFactory {
  * Created by MedBelmahi on 16/04/2017.
  */
 enum EntityType {
-    SHIP, BARREL
+    SHIP, BARREL, CANNONBALL, MINE
+}
+
+
+
+/**
+ * Created by Mohamed BELMAHI on 20/04/2017.
+ */
+class Mine extends Entity {
+    public Mine(int entityId, int currentTurn) {
+        super(entityId, 0, 0, currentTurn);
+    }
+
+    @Override
+    public void updateData(Pirate me, Pirate opponent) {
+
+    }
 }
 
 
