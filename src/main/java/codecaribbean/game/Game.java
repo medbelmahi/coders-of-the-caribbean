@@ -4,8 +4,8 @@ import codecaribbean.command.Command;
 import codecaribbean.entity.Entity;
 import codecaribbean.entity.factory.EntityFactory;
 import codecaribbean.entity.factory.EntityType;
+import codecaribbean.game.cell.Coord;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +17,7 @@ class Game {
     private Pirate me;
     private Pirate opponent;
     private int currentTurn;
+    private List<Coord> cannonBallExplosions;
 
     private Grid grid;
 
@@ -25,8 +26,8 @@ class Game {
     Game() {
         this.entities = new HashMap<>();
         this.currentTurn = 0;
-        this.me = new Pirate(1);
-        this.opponent = new Pirate(0);
+        this.me = new Pirate(1, null);
+        this.opponent = new Pirate(0, this.me);
     }
 
     private void addEntity(int id, Entity entity) {

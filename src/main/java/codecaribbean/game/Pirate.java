@@ -3,25 +3,29 @@ package codecaribbean.game;
 import codecaribbean.command.Command;
 import codecaribbean.entity.Barrel;
 import codecaribbean.entity.Ship;
+import codecaribbean.strategy.GetMoreRum;
+import codecaribbean.strategy.PlayStrategy;
 
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Created by MedBelmahi on 16/04/2017.
  */
 public class Pirate {
 
-    private Set<Command> commands;
     Set<Ship> ships = new HashSet<>();
     Set<Barrel> barrels = new HashSet<>();
     private int id;
+    private Pirate opponent;
 
-    public Pirate(int id) {
+
+    public Pirate(int id, Pirate opponent) {
         this.id = id;
+        if (opponent != null) {
+            this.opponent = opponent;
+            opponent.opponent = this;
+        }
     }
 
     public Command getAction(int i) {
@@ -48,16 +52,9 @@ public class Pirate {
 
     private Command buildShipOrder(final Ship ship) {
 
-        TreeSet<Barrel> barrelTreeSet = new TreeSet<>(new Comparator<Barrel>() {
-            @Override
-            public int compare(Barrel b1, Barrel b2) {
-                return ship.distance(b1) > ship.distance(b2) ? 1 : -1;
-            }
-        });
+        PlayStrategy getMoreRum = new GetMoreRum(barrels, ship);
 
-        barrelTreeSet.addAll(barrels);
-        System.err.println("barrels size : " + barrels.size());
-        return ship.moveTo(barrelTreeSet.first());
+        return getMoreRum.buildAction();
     }
 
     public void addBarrels(Barrel barrel) {

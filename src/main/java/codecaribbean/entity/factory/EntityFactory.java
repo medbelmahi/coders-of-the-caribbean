@@ -16,7 +16,7 @@ public class EntityFactory {
             case SHIP : return new Ship(entityId, x, y, arg1, arg2, arg3, arg4, currentTurn);
             case BARREL : return new Barrel(entityId, x, y, arg1, currentTurn);
             case CANNONBALL : return new Cannonball(entityId, x, y, arg1, arg2, currentTurn);
-            case MINE : return new Mine(entityId, currentTurn);
+            case MINE : return new Mine(entityId, x, y, currentTurn);
             default:
                 throw new IllegalArgumentException("Entity type not exist");
         }

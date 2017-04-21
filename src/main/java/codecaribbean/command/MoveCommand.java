@@ -1,21 +1,21 @@
 package codecaribbean.command;
 
 import codecaribbean.entity.Entity;
-import codecaribbean.entity.Ship;
+import codecaribbean.game.cell.Coord;
 
 /**
  * Created by MedBelmahi on 15/04/2017.
  */
 public class MoveCommand extends Command {
     private Entity ship;
-    private Coordinate coordinate;
+    private Coord coordinate;
 
-    public MoveCommand(Coordinate coordinate) {
+    public MoveCommand(Coord coordinate) {
         super("MOVE");
         this.coordinate = coordinate;
     }
 
-    public MoveCommand(Entity ship, Coordinate coordinate) {
+    public MoveCommand(Entity ship, Coord coordinate) {
         super("MOVE");
         this.ship = ship;
         this.coordinate = coordinate;

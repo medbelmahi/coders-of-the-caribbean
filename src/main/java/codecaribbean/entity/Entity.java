@@ -1,29 +1,28 @@
 package codecaribbean.entity;
 
 import codecaribbean.command.Command;
-import codecaribbean.command.Coordinate;
 import codecaribbean.command.MoveCommand;
 import codecaribbean.game.Pirate;
-import com.sun.javafx.geom.Point2D;
+import codecaribbean.game.cell.Coord;
 
 /**
  * Created by MedBelmahi on 15/04/2017.
  */
 public abstract class Entity {
-    protected Coordinate coordinate;
+    protected Coord coordinate;
     public int id;
     private int currentTurn;
 
     public Entity(int entityId, int x, int y, int currentTurn) {
         this.id = entityId;
-        this.coordinate = new Coordinate(x, y);
+        this.coordinate = new Coord(x, y);
         this.currentTurn = currentTurn;
     }
 
     public void update(int[] args) {
         nextTurn();
         this.id = args[0];
-        this.coordinate.update(args[1], args[2]);
+        this.coordinate = new Coord(args[1], args[2]);
     }
 
     public boolean isDead(int currentTurn) {
@@ -38,7 +37,7 @@ public abstract class Entity {
     }
 
     public double distance(Entity entity) {
-        return this.coordinate.distance(entity.coordinate);
+        return this.coordinate.distanceTo(entity.coordinate);
     }
 
     public Command moveTo(Barrel first) {

@@ -1,8 +1,6 @@
 package codecaribbean.game;
 
 import codecaribbean.command.Command;
-import codecaribbean.entity.Entity;
-import codecaribbean.entity.factory.EntityFactory;
 import codecaribbean.entity.factory.EntityType;
 
 import java.util.Scanner;

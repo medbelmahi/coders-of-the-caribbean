@@ -7,10 +7,17 @@ import codecaribbean.game.Pirate;
  * Created by MedBelmahi on 15/04/2017.
  */
 public class Ship extends Entity {
+
+    private static final int COOLDOWN_CANNON = 2;
+    private static final int COOLDOWN_MINE = 5;
+
+    int mineCooldown;
+    int cannonCooldown;
+
     private int orientation;
     private int speed;
     private int rumStock;
-    private Pirate pirate;
+    private Pirate owner;
     private int intPirate;
     private Command currentOrder;
 
@@ -38,10 +45,10 @@ public class Ship extends Entity {
     @Override
     public void updateData(Pirate me, Pirate opponent) {
         if (me.isMyShip(intPirate)) {
-            this.pirate = me;
+            this.owner = me;
             me.addShip(this);
         } else {
-            this.pirate = opponent;
+            this.owner = opponent;
             opponent.addShip(this);
         }
     }
