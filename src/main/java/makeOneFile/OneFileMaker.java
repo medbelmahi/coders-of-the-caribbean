@@ -8,9 +8,9 @@ import java.util.*;
  * Created by Mohamed BELMAHI on 25/09/2016.
  */
 public class OneFileMaker {
-    
-    public static final String PLAYER_FILE_PATH = "E:\\CodinGame\\coders-of-the-caribbean\\src\\main\\java\\playerFile\\Player.java";
-    public static final String PACKAGE_PATH = "E:\\CodinGame\\coders-of-the-caribbean\\src\\main\\java\\codecaribbean";
+
+    public static final String PLAYER_FILE_PATH = "D:\\CodinGame\\coders-of-the-caribbean\\src\\main\\java\\playerFile\\Player.java";
+    public static final String PACKAGE_PATH = "D:\\CodinGame\\coders-of-the-caribbean\\src\\main\\java\\codecaribbean";
     public static final int UPDATE_RANGE_IN_SECOND = 5; //seconds
     
     public static void main(final String[] args) {
@@ -26,6 +26,7 @@ public class OneFileMaker {
             content = "import java.awt.geom.Line2D;\n" + content;
             content = "import java.awt.geom.Point2D;\n" + content;
             content = "import java.math.*;\n" + content;
+            content = "import java.util.stream.*;\n" + content;
 
             makePlayerFile(content);
     
@@ -85,7 +86,8 @@ public class OneFileMaker {
                     if (sCurrentLine.startsWith("package") || sCurrentLine.startsWith("import")) {
                         continue;
                     } else if (sCurrentLine.startsWith("public class") || sCurrentLine
-                            .startsWith("public abstract class") || sCurrentLine.startsWith("public enum")) {
+                            .startsWith("public abstract class") || sCurrentLine.startsWith("public enum")
+                            || sCurrentLine.startsWith("public interface")) {
                         sCurrentLine = sCurrentLine.replaceFirst("public ", "");
                     }
                     //System.out.println(sCurrentLine);

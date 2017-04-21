@@ -1,3 +1,4 @@
+import java.util.stream.*;
 import java.math.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Line2D;
@@ -27,42 +28,12 @@ abstract class Command {
 
 
 /**
- * Created by MedBelmahi on 16/04/2017.
- */
-class Coordinate {
-    private int x;
-    private int y;
-
-    public Coordinate(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    public void update(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    @Override
-    public String toString() {
-        return x + " " + y;
-    }
-
-    public double distance(Coordinate coordinate) {
-        Math.abs()
-        return (Math.abs(a.x - b.x) + Math.abs(a.y - b.y) + Math.abs(a.z - b.z)) / 2
-        return Point2D.distance(this.x, this.y, coordinate.x, coordinate.y);
-    }
-}
-
-
-/**
  * Created by Mohamed BELMAHI on 20/04/2017.
  */
 class FireCommand extends Command {
 
-    private Coordinate coordinate;
-    protected FireCommand(Coordinate coordinate) {
+    private Coord coordinate;
+    protected FireCommand(Coord coordinate) {
         super("FIRE");
         this.coordinate = coordinate;
     }
@@ -85,14 +56,14 @@ class MineCommand extends Command {
  */
 class MoveCommand extends Command {
     private Entity ship;
-    private Coordinate coordinate;
+    private Coord coordinate;
 
-    public MoveCommand(Coordinate coordinate) {
+    public MoveCommand(Coord coordinate) {
         super("MOVE");
         this.coordinate = coordinate;
     }
 
-    public MoveCommand(Entity ship, Coordinate coordinate) {
+    public MoveCommand(Entity ship, Coord coordinate) {
         super("MOVE");
         this.ship = ship;
         this.coordinate = coordinate;
@@ -162,7 +133,7 @@ class Cannonball extends Entity {
     private int turns;
 
     public Cannonball(int entityId, int... args) {
-        super(entityId, args[0], args[1], args[6]);
+        super(entityId, args[0], args[1], args[4]);
         this.firedBy = args[2];
         this.turns = args[3];
     }
@@ -179,20 +150,20 @@ class Cannonball extends Entity {
  * Created by MedBelmahi on 15/04/2017.
  */
 abstract class Entity {
-    protected Coordinate coordinate;
+    protected Coord coordinate;
     public int id;
     private int currentTurn;
 
     public Entity(int entityId, int x, int y, int currentTurn) {
         this.id = entityId;
-        this.coordinate = new Coordinate(x, y);
+        this.coordinate = new Coord(x, y);
         this.currentTurn = currentTurn;
     }
 
     public void update(int[] args) {
         nextTurn();
         this.id = args[0];
-        this.coordinate.update(args[1], args[2]);
+        this.coordinate = new Coord(args[1], args[2]);
     }
 
     public boolean isDead(int currentTurn) {
@@ -207,7 +178,7 @@ abstract class Entity {
     }
 
     public double distance(Entity entity) {
-        return this.coordinate.distance(entity.coordinate);
+        return this.coordinate.distanceTo(entity.coordinate);
     }
 
     public Command moveTo(Barrel first) {
@@ -232,7 +203,7 @@ class EntityFactory {
             case SHIP : return new Ship(entityId, x, y, arg1, arg2, arg3, arg4, currentTurn);
             case BARREL : return new Barrel(entityId, x, y, arg1, currentTurn);
             case CANNONBALL : return new Cannonball(entityId, x, y, arg1, arg2, currentTurn);
-            case MINE : return new Mine(entityId, currentTurn);
+            case MINE : return new Mine(entityId, x, y, currentTurn);
             default:
                 throw new IllegalArgumentException("Entity type not exist");
         }
@@ -253,8 +224,9 @@ enum EntityType {
  * Created by Mohamed BELMAHI on 20/04/2017.
  */
 class Mine extends Entity {
-    public Mine(int entityId, int currentTurn) {
-        super(entityId, 0, 0, currentTurn);
+
+    public Mine(int entityId, int x, int y, int currentTurn) {
+        super(entityId, x, y, currentTurn);
     }
 
     @Override
@@ -269,10 +241,17 @@ class Mine extends Entity {
  * Created by MedBelmahi on 15/04/2017.
  */
 class Ship extends Entity {
+
+    private static final int COOLDOWN_CANNON = 2;
+    private static final int COOLDOWN_MINE = 5;
+
+    int mineCooldown;
+    int cannonCooldown;
+
     private int orientation;
     private int speed;
     private int rumStock;
-    private Pirate pirate;
+    private Pirate owner;
     private int intPirate;
     private Command currentOrder;
 
@@ -300,10 +279,10 @@ class Ship extends Entity {
     @Override
     public void updateData(Pirate me, Pirate opponent) {
         if (me.isMyShip(intPirate)) {
-            this.pirate = me;
+            this.owner = me;
             me.addShip(this);
         } else {
-            this.pirate = opponent;
+            this.owner = opponent;
             opponent.addShip(this);
         }
     }
@@ -319,10 +298,129 @@ class Ship extends Entity {
 
 
 
+
 /**
  * Created by MedBelmahi on 16/04/2017.
  */
 class Cell {
+}
+
+
+
+/**
+ * Created by MedBelmahi on 20/04/2017.
+ */
+class Coord {
+    private static final int MAP_WIDTH = 23;
+    private static final int MAP_HEIGHT = 21;
+
+    private final static int[][] DIRECTIONS_EVEN = new int[][] { { 1, 0 }, { 0, -1 }, { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, 1 } };
+    private final static int[][] DIRECTIONS_ODD = new int[][] { { 1, 0 }, { 1, -1 }, { 0, -1 }, { -1, 0 }, { 0, 1 }, { 1, 1 } };
+    private final int x;
+    private final int y;
+
+    public Coord(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public Coord(Coord other) {
+        this.x = other.x;
+        this.y = other.y;
+    }
+
+    public double angle(Coord targetPosition) {
+        double dy = (targetPosition.y - this.y) * Math.sqrt(3) / 2;
+        double dx = targetPosition.x - this.x + ((this.y - targetPosition.y) & 1) * 0.5;
+        double angle = -Math.atan2(dy, dx) * 3 / Math.PI;
+        if (angle < 0) {
+            angle += 6;
+        } else if (angle >= 6) {
+            angle -= 6;
+        }
+        return angle;
+    }
+
+    CubeCoordinate toCubeCoordinate() {
+        int xp = x - (y - (y & 1)) / 2;
+        int zp = y;
+        int yp = -(xp + zp);
+        return new CubeCoordinate(xp, yp, zp);
+    }
+
+    Coord neighbor(int orientation) {
+        int newY, newX;
+        if (this.y % 2 == 1) {
+            newY = this.y + DIRECTIONS_ODD[orientation][1];
+            newX = this.x + DIRECTIONS_ODD[orientation][0];
+        } else {
+            newY = this.y + DIRECTIONS_EVEN[orientation][1];
+            newX = this.x + DIRECTIONS_EVEN[orientation][0];
+        }
+
+        return new Coord(newX, newY);
+    }
+
+    boolean isInsideMap() {
+        return x >= 0 && x < MAP_WIDTH && y >= 0 && y < MAP_HEIGHT;
+    }
+
+    public int distanceTo(Coord dst) {
+        return this.toCubeCoordinate().distanceTo(dst.toCubeCoordinate());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        Coord other = (Coord) obj;
+        return y == other.y && x == other.x;
+    }
+
+    @Override
+    public String toString() {
+        return GameUtils.join(x, y);
+    }
+}
+
+
+
+/**
+ * Created by MedBelmahi on 20/04/2017.
+ */
+class CubeCoordinate {
+    static int[][] directions = new int[][] { { 1, -1, 0 }, { +1, 0, -1 }, { 0, +1, -1 }, { -1, +1, 0 }, { -1, 0, +1 }, { 0, -1, +1 } };
+    int x, y, z;
+
+    public CubeCoordinate(int x, int y, int z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    Coord toOffsetCoordinate() {
+        int newX = x + (z - (z & 1)) / 2;
+        int newY = z;
+        return new Coord(newX, newY);
+    }
+
+    CubeCoordinate neighbor(int orientation) {
+        int nx = this.x + directions[orientation][0];
+        int ny = this.y + directions[orientation][1];
+        int nz = this.z + directions[orientation][2];
+
+        return new CubeCoordinate(nx, ny, nz);
+    }
+
+    int distanceTo(CubeCoordinate dst) {
+        return (Math.abs(x - dst.x) + Math.abs(y - dst.y) + Math.abs(z - dst.z)) / 2;
+    }
+
+    @Override
+    public String toString() {
+        return GameUtils.join(x, y, z);
+    }
 }
 
 
@@ -335,6 +433,7 @@ class Game {
     private Pirate me;
     private Pirate opponent;
     private int currentTurn;
+    private List<Coord> cannonBallExplosions;
 
     private Grid grid;
 
@@ -343,8 +442,8 @@ class Game {
     Game() {
         this.entities = new HashMap<>();
         this.currentTurn = 0;
-        this.me = new Pirate(1);
-        this.opponent = new Pirate(0);
+        this.me = new Pirate(1, null);
+        this.opponent = new Pirate(0, this.me);
     }
 
     private void addEntity(int id, Entity entity) {
@@ -389,6 +488,19 @@ class Game {
 }
 
 
+
+/**
+ * Created by MedBelmahi on 20/04/2017.
+ */
+class GameUtils {
+    @SafeVarargs
+    public static final <T> String join(T... v) {
+        return Stream.of(v).map(String::valueOf).collect(Collectors.joining(" "));
+    }
+}
+
+
+
 /**
  * Created by MedBelmahi on 15/04/2017.
  */
@@ -404,13 +516,18 @@ class Grid {
  */
 class Pirate {
 
-    private Set<Command> commands;
     Set<Ship> ships = new HashSet<>();
     Set<Barrel> barrels = new HashSet<>();
     private int id;
+    private Pirate opponent;
 
-    public Pirate(int id) {
+
+    public Pirate(int id, Pirate opponent) {
         this.id = id;
+        if (opponent != null) {
+            this.opponent = opponent;
+            opponent.opponent = this;
+        }
     }
 
     public Command getAction(int i) {
@@ -437,16 +554,9 @@ class Pirate {
 
     private Command buildShipOrder(final Ship ship) {
 
-        TreeSet<Barrel> barrelTreeSet = new TreeSet<>(new Comparator<Barrel>() {
-            @Override
-            public int compare(Barrel b1, Barrel b2) {
-                return ship.distance(b1) > ship.distance(b2) ? 1 : -1;
-            }
-        });
+        PlayStrategy getMoreRum = new GetMoreRum(barrels, ship);
 
-        barrelTreeSet.addAll(barrels);
-        System.err.println("barrels size : " + barrels.size());
-        return ship.moveTo(barrelTreeSet.first());
+        return getMoreRum.buildAction();
     }
 
     public void addBarrels(Barrel barrel) {
@@ -505,4 +615,59 @@ class Player {
             }
         }
     }
+}
+
+
+
+/**
+ * Created by MedBelmahi on 21/04/2017.
+ */
+class DoFire {
+}
+
+
+
+
+/**
+ * Created by MedBelmahi on 21/04/2017.
+ */
+class GetMoreRum implements PlayStrategy {
+
+    private Set<Barrel> barrels;
+    private Ship ship;
+
+    public GetMoreRum(Set<Barrel> barrels, Ship ship) {
+        this.barrels = barrels;
+        this.ship = ship;
+    }
+
+    @Override
+    public Command buildAction() {
+        TreeSet<Barrel> barrelTreeSet = new TreeSet<>(new Comparator<Barrel>() {
+            @Override
+            public int compare(Barrel b1, Barrel b2) {
+                return ship.distance(b1) > ship.distance(b2) ? 1 : -1;
+            }
+        });
+
+        barrelTreeSet.addAll(barrels);
+        System.err.println("barrels size : " + barrels.size());
+        return ship.moveTo(barrelTreeSet.first());
+    }
+}
+
+
+/**
+ * Created by MedBelmahi on 21/04/2017.
+ */
+class PlaceMine {
+}
+
+
+
+/**
+ * Created by MedBelmahi on 21/04/2017.
+ */
+interface PlayStrategy {
+    Command buildAction();
 }

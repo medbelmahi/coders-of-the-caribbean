@@ -11,7 +11,7 @@ public class Cannonball extends Entity {
     private int turns;
 
     public Cannonball(int entityId, int... args) {
-        super(entityId, args[0], args[1], args[6]);
+        super(entityId, args[0], args[1], args[4]);
         this.firedBy = args[2];
         this.turns = args[3];
     }
