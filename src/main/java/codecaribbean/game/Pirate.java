@@ -1,12 +1,18 @@
 package codecaribbean.game;
 
 import codecaribbean.command.Command;
+import codecaribbean.command.WaitCommand;
 import codecaribbean.entity.Barrel;
+import codecaribbean.entity.Cannonball;
+import codecaribbean.entity.Mine;
 import codecaribbean.entity.Ship;
+import codecaribbean.strategy.DoFire;
 import codecaribbean.strategy.GetMoreRum;
 import codecaribbean.strategy.PlayStrategy;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -16,6 +22,8 @@ public class Pirate {
 
     Set<Ship> ships = new HashSet<>();
     Set<Barrel> barrels = new HashSet<>();
+    Set<Mine> mines = new HashSet<>();
+    Set<Cannonball> cannonballs = new HashSet<>();
     private int id;
     private Pirate opponent;
 
@@ -30,6 +38,7 @@ public class Pirate {
 
     public Command getAction(int i) {
         for (Ship ship : ships) {
+            System.err.println("here 1");
             return ship.getOrder();
         }
         return null;
@@ -44,6 +53,7 @@ public class Pirate {
     }
 
     public void buildCommands() {
+        System.err.println("ships size : " + ships.size());
         for (Ship ship : ships) {
             final Command command = buildShipOrder(ship);
             ship.setOrder(command);
@@ -52,9 +62,20 @@ public class Pirate {
 
     private Command buildShipOrder(final Ship ship) {
 
-        PlayStrategy getMoreRum = new GetMoreRum(barrels, ship);
+        List<PlayStrategy> strategies = new ArrayList<>();
+        System.err.println("mines size : " + mines.size());
+        System.err.println("barrels size : " + barrels.size());
+        strategies.add(new DoFire(mines, ship));
+        strategies.add(new GetMoreRum(barrels, ship));
 
-        return getMoreRum.buildAction();
+        for (PlayStrategy strategy : strategies) {
+            System.err.println("strategy name : " + strategy.toString());
+            if (strategy.isApplicable()) {
+                return strategy.buildAction();
+            }
+        }
+
+        return new WaitCommand();
     }
 
     public void addBarrels(Barrel barrel) {
@@ -64,5 +85,15 @@ public class Pirate {
     public void initTurn() {
         ships.clear();
         barrels.clear();
+        this.cannonballs.clear();
+        this.mines.clear();
+    }
+
+    public void addMine(Mine mine) {
+        this.mines.add(mine);
+    }
+
+    public void addCannonBall(Cannonball cannonball) {
+        this.cannonballs.add(cannonball);
     }
 }

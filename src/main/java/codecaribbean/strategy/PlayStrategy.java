@@ -7,4 +7,6 @@ import codecaribbean.command.Command;
  */
 public interface PlayStrategy {
     Command buildAction();
+
+    Boolean isApplicable();
 }

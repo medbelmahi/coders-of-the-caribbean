@@ -26,6 +26,8 @@ public abstract class Entity {
     }
 
     public boolean isDead(int currentTurn) {
+        System.err.println("ship turn : " + this.currentTurn);
+        System.err.println("game turn : " + currentTurn);
         return this.currentTurn < currentTurn;
     }
 
@@ -44,7 +46,9 @@ public abstract class Entity {
         return new MoveCommand(this, first.coordinate);
     }
 
-    private void nextTurn() {
+    protected void nextTurn() {
         this.currentTurn++;
     }
+
+    public abstract Command FireMe();
 }

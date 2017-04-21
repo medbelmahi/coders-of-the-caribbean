@@ -34,4 +34,9 @@ public class GetMoreRum implements PlayStrategy {
         System.err.println("barrels size : " + barrels.size());
         return ship.moveTo(barrelTreeSet.first());
     }
+
+    @Override
+    public Boolean isApplicable() {
+        return !this.barrels.isEmpty();
+    }
 }

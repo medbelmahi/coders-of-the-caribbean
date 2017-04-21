@@ -33,9 +33,15 @@ abstract class Command {
 class FireCommand extends Command {
 
     private Coord coordinate;
-    protected FireCommand(Coord coordinate) {
+
+    public FireCommand(Coord coordinate) {
         super("FIRE");
         this.coordinate = coordinate;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + " " + coordinate.toString();
     }
 }
 
@@ -120,6 +126,11 @@ class Barrel extends Entity{
     public void updateData(Pirate me, Pirate opponent) {
         me.addBarrels(this);
     }
+
+    @Override
+    public Command FireMe() {
+        return null;
+    }
 }
 
 
@@ -140,7 +151,12 @@ class Cannonball extends Entity {
 
     @Override
     public void updateData(Pirate me, Pirate opponent) {
+        me.addCannonBall(this);
+    }
 
+    @Override
+    public Command FireMe() {
+        return null;
     }
 }
 
@@ -167,6 +183,8 @@ abstract class Entity {
     }
 
     public boolean isDead(int currentTurn) {
+        System.err.println("ship turn : " + this.currentTurn);
+        System.err.println("game turn : " + currentTurn);
         return this.currentTurn < currentTurn;
     }
 
@@ -185,9 +203,11 @@ abstract class Entity {
         return new MoveCommand(this, first.coordinate);
     }
 
-    private void nextTurn() {
+    protected void nextTurn() {
         this.currentTurn++;
     }
+
+    public abstract Command FireMe();
 }
 
 
@@ -231,7 +251,12 @@ class Mine extends Entity {
 
     @Override
     public void updateData(Pirate me, Pirate opponent) {
+        me.addMine(this);
+    }
 
+    @Override
+    public Command FireMe() {
+        return new FireCommand(this.coordinate);
     }
 }
 
@@ -242,8 +267,8 @@ class Mine extends Entity {
  */
 class Ship extends Entity {
 
-    private static final int COOLDOWN_CANNON = 2;
-    private static final int COOLDOWN_MINE = 5;
+    private static final int COOLDOWN_CANNON = 1;
+    private static final int COOLDOWN_MINE = 4;
 
     int mineCooldown;
     int cannonCooldown;
@@ -265,6 +290,7 @@ class Ship extends Entity {
 
     @Override
     public void update(int[] args) {
+        System.err.println("ship update");
         super.update(args);
         this.orientation = args[3];
         this.speed = args[4];
@@ -287,12 +313,37 @@ class Ship extends Entity {
         }
     }
 
+    @Override
+    public Command FireMe() {
+        return null;
+    }
+
     public void setOrder(Command command) {
         this.currentOrder = command;
     }
 
     public Command getOrder() {
         return this.currentOrder;
+    }
+
+    public boolean canFire() {
+        return cannonCooldown == 0;
+    }
+
+    public Command doFire(Entity actionTarget) {
+        this.cannonCooldown = COOLDOWN_CANNON;
+        return actionTarget.FireMe();
+    }
+
+    @Override
+    public void nextTurn() {
+        super.nextTurn();
+        if (this.cannonCooldown > 0) {
+            this.cannonCooldown--;
+        }
+        if (this.mineCooldown > 0) {
+            this.mineCooldown--;
+        }
     }
 }
 
@@ -462,6 +513,7 @@ class Game {
 
     public void nextTurn() {
         this.currentTurn++;
+        System.err.println("Turn number : " + this.currentTurn);
     }
 
     public Command doAction(int i) {
@@ -481,9 +533,11 @@ class Game {
                 entity.updateData(me, opponent);
             } else {
                 System.err.println("remove entity");
+                System.err.println("reoved entity : " + entity.toString());
                 entities.remove(entity);
             }
         }
+        System.err.println("fin remove...");
     }
 }
 
@@ -518,6 +572,8 @@ class Pirate {
 
     Set<Ship> ships = new HashSet<>();
     Set<Barrel> barrels = new HashSet<>();
+    Set<Mine> mines = new HashSet<>();
+    Set<Cannonball> cannonballs = new HashSet<>();
     private int id;
     private Pirate opponent;
 
@@ -532,6 +588,7 @@ class Pirate {
 
     public Command getAction(int i) {
         for (Ship ship : ships) {
+            System.err.println("here 1");
             return ship.getOrder();
         }
         return null;
@@ -546,6 +603,7 @@ class Pirate {
     }
 
     public void buildCommands() {
+        System.err.println("ships size : " + ships.size());
         for (Ship ship : ships) {
             final Command command = buildShipOrder(ship);
             ship.setOrder(command);
@@ -554,9 +612,20 @@ class Pirate {
 
     private Command buildShipOrder(final Ship ship) {
 
-        PlayStrategy getMoreRum = new GetMoreRum(barrels, ship);
+        List<PlayStrategy> strategies = new ArrayList<>();
+        System.err.println("mines size : " + mines.size());
+        System.err.println("barrels size : " + barrels.size());
+        strategies.add(new DoFire(mines, ship));
+        strategies.add(new GetMoreRum(barrels, ship));
 
-        return getMoreRum.buildAction();
+        for (PlayStrategy strategy : strategies) {
+            System.err.println("strategy name : " + strategy.toString());
+            if (strategy.isApplicable()) {
+                return strategy.buildAction();
+            }
+        }
+
+        return new WaitCommand();
     }
 
     public void addBarrels(Barrel barrel) {
@@ -566,6 +635,16 @@ class Pirate {
     public void initTurn() {
         ships.clear();
         barrels.clear();
+        this.cannonballs.clear();
+        this.mines.clear();
+    }
+
+    public void addMine(Mine mine) {
+        this.mines.add(mine);
+    }
+
+    public void addCannonBall(Cannonball cannonball) {
+        this.cannonballs.add(cannonball);
     }
 }
 
@@ -606,7 +685,7 @@ class Player {
             pirateGame.processing();
 
             for (int i = 0; i < myShipCount; i++) {
-
+                System.err.println("order N : " + i);
                 // Write an action using System.out.println()
                 // To debug: System.err.println("Debug messages...");
                 Command command = pirateGame.doAction(i);
@@ -619,10 +698,55 @@ class Player {
 
 
 
+
+
 /**
  * Created by MedBelmahi on 21/04/2017.
  */
-class DoFire {
+class DoFire implements PlayStrategy {
+
+    public static final int UNDER_ATTCK_RANG = 10;
+
+    private Set<Mine> targets = new HashSet<>();
+    private Ship ship;
+    private Entity actionTarget;
+
+    public DoFire(Set<Mine> targets, Ship ship) {
+        this.targets = targets;
+        this.ship = ship;
+    }
+
+    @Override
+    public Command buildAction() {
+        System.err.printf("do fire");
+        return ship.doFire(actionTarget);
+    }
+
+    @Override
+    public Boolean isApplicable() {
+
+        if (ship.canFire() && !this.targets.isEmpty()) {
+
+            TreeSet<Entity> targetTreeSet = new TreeSet<>(new Comparator<Entity>() {
+                @Override
+                public int compare(Entity e1, Entity e2) {
+                    return ship.distance(e1) > ship.distance(e2) ? 1 : -1;
+                }
+            });
+
+            targetTreeSet.addAll(this.targets);
+
+            Entity currentTarget = targetTreeSet.first();
+
+            if (currentTarget.distance(this.ship) < UNDER_ATTCK_RANG) {
+                this.actionTarget = currentTarget;
+
+                return Boolean.TRUE;
+            }
+        }
+
+        return Boolean.FALSE;
+    }
 }
 
 
@@ -654,6 +778,11 @@ class GetMoreRum implements PlayStrategy {
         System.err.println("barrels size : " + barrels.size());
         return ship.moveTo(barrelTreeSet.first());
     }
+
+    @Override
+    public Boolean isApplicable() {
+        return !this.barrels.isEmpty();
+    }
 }
 
 
@@ -670,4 +799,6 @@ class PlaceMine {
  */
 interface PlayStrategy {
     Command buildAction();
+
+    Boolean isApplicable();
 }

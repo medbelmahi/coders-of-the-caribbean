@@ -39,7 +39,7 @@ class Player {
             pirateGame.processing();
 
             for (int i = 0; i < myShipCount; i++) {
-
+                System.err.println("order N : " + i);
                 // Write an action using System.out.println()
                 // To debug: System.err.println("Debug messages...");
                 Command command = pirateGame.doAction(i);

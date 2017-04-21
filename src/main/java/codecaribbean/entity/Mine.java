@@ -1,5 +1,7 @@
 package codecaribbean.entity;
 
+import codecaribbean.command.Command;
+import codecaribbean.command.FireCommand;
 import codecaribbean.game.Pirate;
 
 /**
@@ -13,6 +15,11 @@ public class Mine extends Entity {
 
     @Override
     public void updateData(Pirate me, Pirate opponent) {
+        me.addMine(this);
+    }
 
+    @Override
+    public Command FireMe() {
+        return new FireCommand(this.coordinate);
     }
 }

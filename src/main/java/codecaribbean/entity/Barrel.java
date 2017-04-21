@@ -1,7 +1,6 @@
 package codecaribbean.entity;
 
 import codecaribbean.command.Command;
-import codecaribbean.command.MoveCommand;
 import codecaribbean.game.Pirate;
 
 /**
@@ -25,5 +24,10 @@ public class Barrel extends Entity{
     @Override
     public void updateData(Pirate me, Pirate opponent) {
         me.addBarrels(this);
+    }
+
+    @Override
+    public Command FireMe() {
+        return null;
     }
 }

@@ -8,8 +8,8 @@ import codecaribbean.game.Pirate;
  */
 public class Ship extends Entity {
 
-    private static final int COOLDOWN_CANNON = 2;
-    private static final int COOLDOWN_MINE = 5;
+    private static final int COOLDOWN_CANNON = 1;
+    private static final int COOLDOWN_MINE = 4;
 
     int mineCooldown;
     int cannonCooldown;
@@ -31,6 +31,7 @@ public class Ship extends Entity {
 
     @Override
     public void update(int[] args) {
+        System.err.println("ship update");
         super.update(args);
         this.orientation = args[3];
         this.speed = args[4];
@@ -53,11 +54,36 @@ public class Ship extends Entity {
         }
     }
 
+    @Override
+    public Command FireMe() {
+        return null;
+    }
+
     public void setOrder(Command command) {
         this.currentOrder = command;
     }
 
     public Command getOrder() {
         return this.currentOrder;
+    }
+
+    public boolean canFire() {
+        return cannonCooldown == 0;
+    }
+
+    public Command doFire(Entity actionTarget) {
+        this.cannonCooldown = COOLDOWN_CANNON;
+        return actionTarget.FireMe();
+    }
+
+    @Override
+    public void nextTurn() {
+        super.nextTurn();
+        if (this.cannonCooldown > 0) {
+            this.cannonCooldown--;
+        }
+        if (this.mineCooldown > 0) {
+            this.mineCooldown--;
+        }
     }
 }

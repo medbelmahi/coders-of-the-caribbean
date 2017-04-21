@@ -46,6 +46,7 @@ class Game {
 
     public void nextTurn() {
         this.currentTurn++;
+        System.err.println("Turn number : " + this.currentTurn);
     }
 
     public Command doAction(int i) {
@@ -65,8 +66,10 @@ class Game {
                 entity.updateData(me, opponent);
             } else {
                 System.err.println("remove entity");
+                System.err.println("reoved entity : " + entity.toString());
                 entities.remove(entity);
             }
         }
+        System.err.println("fin remove...");
     }
 }
