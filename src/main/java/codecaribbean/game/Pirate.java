@@ -20,9 +20,9 @@ import java.util.Set;
  */
 public class Pirate {
 
-    Set<Ship> ships = new HashSet<>();
+    List<Ship> ships = new ArrayList<>();
     Set<Barrel> barrels = new HashSet<>();
-    Set<Mine> mines = new HashSet<>();
+    List<Mine> mines = new ArrayList<>();
     Set<Cannonball> cannonballs = new HashSet<>();
     private int id;
     private Pirate opponent;
@@ -37,11 +37,7 @@ public class Pirate {
     }
 
     public Command getAction(int i) {
-        for (Ship ship : ships) {
-            System.err.println("here 1");
-            return ship.getOrder();
-        }
-        return null;
+        return ships.get(i).getOrder();
     }
 
     public boolean isMyShip(int intPirate) {
@@ -65,8 +61,9 @@ public class Pirate {
         List<PlayStrategy> strategies = new ArrayList<>();
         System.err.println("mines size : " + mines.size());
         System.err.println("barrels size : " + barrels.size());
-        strategies.add(new DoFire(mines, ship));
-        strategies.add(new GetMoreRum(barrels, ship));
+        strategies.add(new DoFire(this.mines, ship));
+        strategies.add(new GetMoreRum(this.barrels, ship));
+        strategies.add(new DoFire(this.opponent.ships, ship));
 
         for (PlayStrategy strategy : strategies) {
             System.err.println("strategy name : " + strategy.toString());

@@ -37,6 +37,6 @@ public class GetMoreRum implements PlayStrategy {
 
     @Override
     public Boolean isApplicable() {
-        return !this.barrels.isEmpty();
+        return ship.needRums() && !this.barrels.isEmpty();
     }
 }

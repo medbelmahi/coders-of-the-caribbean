@@ -27,7 +27,7 @@ public class Barrel extends Entity{
     }
 
     @Override
-    public Command FireMe() {
+    public Command FireMe(Ship ship) {
         return null;
     }
 }

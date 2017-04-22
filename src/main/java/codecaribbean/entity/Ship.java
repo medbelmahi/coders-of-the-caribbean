@@ -1,7 +1,11 @@
 package codecaribbean.entity;
 
 import codecaribbean.command.Command;
+import codecaribbean.command.FireCommand;
+import codecaribbean.command.MoveCommand;
 import codecaribbean.game.Pirate;
+import codecaribbean.game.cell.Coord;
+import codecaribbean.strategy.DoFire;
 
 /**
  * Created by MedBelmahi on 15/04/2017.
@@ -31,7 +35,6 @@ public class Ship extends Entity {
 
     @Override
     public void update(int[] args) {
-        System.err.println("ship update");
         super.update(args);
         this.orientation = args[3];
         this.speed = args[4];
@@ -55,8 +58,30 @@ public class Ship extends Entity {
     }
 
     @Override
-    public Command FireMe() {
-        return null;
+    public Command FireMe(Ship ship) {
+
+        Coord position = this.coordinate;
+        int distance = 0;
+        int countTurns = 0;
+        int turns = 0;
+        do {
+            countTurns++;
+
+            for (int i = 1; i <= this.speed; i++) {
+                position = position.neighbor(this.orientation);
+            }
+
+            distance = ship.coordinate.distanceTo(position);
+            turns = (distance + 1) / 3;
+            turns = turns == 0 ? 1 : turns;
+
+        } while (turns != countTurns && distance < DoFire.UNDER_ATTACK_RANG);
+
+        if (distance < DoFire.UNDER_ATTACK_RANG) {
+            return new FireCommand(position);
+        }
+
+        return new MoveCommand(this.coordinate);
     }
 
     public void setOrder(Command command) {
@@ -73,7 +98,8 @@ public class Ship extends Entity {
 
     public Command doFire(Entity actionTarget) {
         this.cannonCooldown = COOLDOWN_CANNON;
-        return actionTarget.FireMe();
+        System.err.println("Do Fire ... ship : " + this.id + "\ttarget : " + actionTarget.id);
+        return actionTarget.FireMe(this);
     }
 
     @Override
@@ -85,5 +111,19 @@ public class Ship extends Entity {
         if (this.mineCooldown > 0) {
             this.mineCooldown--;
         }
+    }
+
+    public boolean needRums() {
+        return rumStock < 90;
+    }
+
+    public Coord positionAfter(int turns) {
+        Coord position = this.coordinate;
+        for (int i = 0; i < turns; i++) {
+            for (int j = 0; j < this.speed; j++) {
+                position = position.neighbor(this.orientation);
+            }
+        }
+        return position;
     }
 }

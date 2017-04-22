@@ -12,11 +12,13 @@ public abstract class Entity {
     protected Coord coordinate;
     public int id;
     private int currentTurn;
+    protected boolean isUnderAttack;
 
     public Entity(int entityId, int x, int y, int currentTurn) {
         this.id = entityId;
         this.coordinate = new Coord(x, y);
         this.currentTurn = currentTurn;
+        isUnderAttack = false;
     }
 
     public void update(int[] args) {
@@ -26,8 +28,6 @@ public abstract class Entity {
     }
 
     public boolean isDead(int currentTurn) {
-        System.err.println("ship turn : " + this.currentTurn);
-        System.err.println("game turn : " + currentTurn);
         return this.currentTurn < currentTurn;
     }
 
@@ -50,5 +50,9 @@ public abstract class Entity {
         this.currentTurn++;
     }
 
-    public abstract Command FireMe();
+    public abstract Command FireMe(Ship ship);
+
+    public boolean isUnderAttack() {
+        return isUnderAttack;
+    }
 }

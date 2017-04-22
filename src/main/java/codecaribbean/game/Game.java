@@ -65,11 +65,8 @@ class Game {
             if (!entity.isDead(currentTurn)) {
                 entity.updateData(me, opponent);
             } else {
-                System.err.println("remove entity");
-                System.err.println("reoved entity : " + entity.toString());
                 entities.remove(entity);
             }
         }
-        System.err.println("fin remove...");
     }
 }

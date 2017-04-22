@@ -9,6 +9,7 @@ import codecaribbean.game.Pirate;
  */
 public class Mine extends Entity {
 
+
     public Mine(int entityId, int x, int y, int currentTurn) {
         super(entityId, x, y, currentTurn);
     }
@@ -19,7 +20,10 @@ public class Mine extends Entity {
     }
 
     @Override
-    public Command FireMe() {
+    public Command FireMe(Ship ship) {
+        this.isUnderAttack = true;
         return new FireCommand(this.coordinate);
     }
+
+
 }

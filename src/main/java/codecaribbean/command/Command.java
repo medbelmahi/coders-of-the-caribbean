@@ -8,6 +8,7 @@ public abstract class Command {
 
     protected Command(String commandLabel) {
         this.commandLabel = commandLabel;
+        System.err.println("Create command : " + commandLabel);
     }
 
     @Override

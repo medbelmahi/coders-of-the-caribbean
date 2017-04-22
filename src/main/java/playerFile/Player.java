@@ -17,6 +17,7 @@ abstract class Command {
 
     protected Command(String commandLabel) {
         this.commandLabel = commandLabel;
+        System.err.println("Create command : " + commandLabel);
     }
 
     @Override
@@ -128,7 +129,7 @@ class Barrel extends Entity{
     }
 
     @Override
-    public Command FireMe() {
+    public Command FireMe(Ship ship) {
         return null;
     }
 }
@@ -155,8 +156,13 @@ class Cannonball extends Entity {
     }
 
     @Override
-    public Command FireMe() {
+    public Command FireMe(Ship ship) {
         return null;
+    }
+
+    public boolean willDestroy(Ship ship) {
+        Coord shipPosition = ship.positionAfter(this.turns);
+        return shipPosition.equals(this.coordinate);
     }
 }
 
@@ -169,11 +175,13 @@ abstract class Entity {
     protected Coord coordinate;
     public int id;
     private int currentTurn;
+    protected boolean isUnderAttack;
 
     public Entity(int entityId, int x, int y, int currentTurn) {
         this.id = entityId;
         this.coordinate = new Coord(x, y);
         this.currentTurn = currentTurn;
+        isUnderAttack = false;
     }
 
     public void update(int[] args) {
@@ -183,8 +191,6 @@ abstract class Entity {
     }
 
     public boolean isDead(int currentTurn) {
-        System.err.println("ship turn : " + this.currentTurn);
-        System.err.println("game turn : " + currentTurn);
         return this.currentTurn < currentTurn;
     }
 
@@ -207,7 +213,11 @@ abstract class Entity {
         this.currentTurn++;
     }
 
-    public abstract Command FireMe();
+    public abstract Command FireMe(Ship ship);
+
+    public boolean isUnderAttack() {
+        return isUnderAttack;
+    }
 }
 
 
@@ -245,6 +255,7 @@ enum EntityType {
  */
 class Mine extends Entity {
 
+
     public Mine(int entityId, int x, int y, int currentTurn) {
         super(entityId, x, y, currentTurn);
     }
@@ -255,9 +266,12 @@ class Mine extends Entity {
     }
 
     @Override
-    public Command FireMe() {
+    public Command FireMe(Ship ship) {
+        this.isUnderAttack = true;
         return new FireCommand(this.coordinate);
     }
+
+
 }
 
 
@@ -290,7 +304,6 @@ class Ship extends Entity {
 
     @Override
     public void update(int[] args) {
-        System.err.println("ship update");
         super.update(args);
         this.orientation = args[3];
         this.speed = args[4];
@@ -314,8 +327,30 @@ class Ship extends Entity {
     }
 
     @Override
-    public Command FireMe() {
-        return null;
+    public Command FireMe(Ship ship) {
+
+        Coord position = this.coordinate;
+        int distance = 0;
+        int countTurns = 0;
+        int turns = 0;
+        do {
+            countTurns++;
+
+            for (int i = 1; i <= this.speed; i++) {
+                position = position.neighbor(this.orientation);
+            }
+
+            distance = ship.coordinate.distanceTo(position);
+            turns = (distance + 1) / 3;
+            turns = turns == 0 ? 1 : turns;
+
+        } while (turns != countTurns && distance < DoFire.UNDER_ATTACK_RANG);
+
+        if (distance < DoFire.UNDER_ATTACK_RANG) {
+            return new FireCommand(position);
+        }
+
+        return new MoveCommand(this.coordinate);
     }
 
     public void setOrder(Command command) {
@@ -332,7 +367,8 @@ class Ship extends Entity {
 
     public Command doFire(Entity actionTarget) {
         this.cannonCooldown = COOLDOWN_CANNON;
-        return actionTarget.FireMe();
+        System.err.println("Do Fire ... ship : " + this.id + "\ttarget : " + actionTarget.id);
+        return actionTarget.FireMe(this);
     }
 
     @Override
@@ -344,6 +380,20 @@ class Ship extends Entity {
         if (this.mineCooldown > 0) {
             this.mineCooldown--;
         }
+    }
+
+    public boolean needRums() {
+        return rumStock < 90;
+    }
+
+    public Coord positionAfter(int turns) {
+        Coord position = this.coordinate;
+        for (int i = 0; i < turns; i++) {
+            for (int j = 0; j < this.speed; j++) {
+                position = position.neighbor(this.orientation);
+            }
+        }
+        return position;
     }
 }
 
@@ -399,7 +449,7 @@ class Coord {
         return new CubeCoordinate(xp, yp, zp);
     }
 
-    Coord neighbor(int orientation) {
+    public Coord neighbor(int orientation) {
         int newY, newX;
         if (this.y % 2 == 1) {
             newY = this.y + DIRECTIONS_ODD[orientation][1];
@@ -532,12 +582,9 @@ class Game {
             if (!entity.isDead(currentTurn)) {
                 entity.updateData(me, opponent);
             } else {
-                System.err.println("remove entity");
-                System.err.println("reoved entity : " + entity.toString());
                 entities.remove(entity);
             }
         }
-        System.err.println("fin remove...");
     }
 }
 
@@ -570,9 +617,9 @@ class Grid {
  */
 class Pirate {
 
-    Set<Ship> ships = new HashSet<>();
+    List<Ship> ships = new ArrayList<>();
     Set<Barrel> barrels = new HashSet<>();
-    Set<Mine> mines = new HashSet<>();
+    List<Mine> mines = new ArrayList<>();
     Set<Cannonball> cannonballs = new HashSet<>();
     private int id;
     private Pirate opponent;
@@ -587,11 +634,7 @@ class Pirate {
     }
 
     public Command getAction(int i) {
-        for (Ship ship : ships) {
-            System.err.println("here 1");
-            return ship.getOrder();
-        }
-        return null;
+        return ships.get(i).getOrder();
     }
 
     public boolean isMyShip(int intPirate) {
@@ -615,8 +658,9 @@ class Pirate {
         List<PlayStrategy> strategies = new ArrayList<>();
         System.err.println("mines size : " + mines.size());
         System.err.println("barrels size : " + barrels.size());
-        strategies.add(new DoFire(mines, ship));
-        strategies.add(new GetMoreRum(barrels, ship));
+        strategies.add(new DoFire(this.mines, ship));
+        strategies.add(new GetMoreRum(this.barrels, ship));
+        strategies.add(new DoFire(this.opponent.ships, ship));
 
         for (PlayStrategy strategy : strategies) {
             System.err.println("strategy name : " + strategy.toString());
@@ -705,27 +749,29 @@ class Player {
  */
 class DoFire implements PlayStrategy {
 
-    public static final int UNDER_ATTCK_RANG = 10;
+    public static final int UNDER_ATTACK_RANG = 10;
 
-    private Set<Mine> targets = new HashSet<>();
+    private List<? extends Entity> targets;
     private Ship ship;
     private Entity actionTarget;
 
-    public DoFire(Set<Mine> targets, Ship ship) {
+    public DoFire(List<? extends Entity> targets, Ship ship) {
         this.targets = targets;
         this.ship = ship;
     }
 
     @Override
     public Command buildAction() {
-        System.err.printf("do fire");
         return ship.doFire(actionTarget);
     }
 
     @Override
     public Boolean isApplicable() {
+        return applicableFor(this.targets);
+    }
 
-        if (ship.canFire() && !this.targets.isEmpty()) {
+    private Boolean applicableFor(List<? extends Entity> targets) {
+        if (ship.canFire() && !targets.isEmpty()) {
 
             TreeSet<Entity> targetTreeSet = new TreeSet<>(new Comparator<Entity>() {
                 @Override
@@ -734,17 +780,19 @@ class DoFire implements PlayStrategy {
                 }
             });
 
-            targetTreeSet.addAll(this.targets);
+            targetTreeSet.addAll(targets);
 
-            Entity currentTarget = targetTreeSet.first();
-
-            if (currentTarget.distance(this.ship) < UNDER_ATTCK_RANG) {
-                this.actionTarget = currentTarget;
-
-                return Boolean.TRUE;
+            for (Entity currentTarget : targetTreeSet) {
+                if (currentTarget.distance(this.ship) < UNDER_ATTACK_RANG) {
+                    if (!currentTarget.isUnderAttack()) {
+                        this.actionTarget = currentTarget;
+                        return Boolean.TRUE;
+                    }
+                } else {
+                    return Boolean.FALSE;
+                }
             }
         }
-
         return Boolean.FALSE;
     }
 }
@@ -781,7 +829,7 @@ class GetMoreRum implements PlayStrategy {
 
     @Override
     public Boolean isApplicable() {
-        return !this.barrels.isEmpty();
+        return ship.needRums() && !this.barrels.isEmpty();
     }
 }
 
@@ -801,4 +849,40 @@ interface PlayStrategy {
     Command buildAction();
 
     Boolean isApplicable();
+}
+
+
+
+
+/**
+ * Created by MedBelmahi on 22/04/2017.
+ */
+class Runaway implements PlayStrategy {
+
+    private List<Cannonball> cannonballs;
+    private Ship ship;
+    private Cannonball dangerBall;
+
+    public Runaway(List<Cannonball> cannonballs, Ship ship) {
+        this.cannonballs = cannonballs;
+        this.ship = ship;
+    }
+
+    @Override
+    public Command buildAction() {
+        return null;
+    }
+
+    @Override
+    public Boolean isApplicable() {
+
+        for (Cannonball cannonball : this.cannonballs) {
+            if (cannonball.willDestroy(ship)) {
+                this.dangerBall = cannonball;
+                return Boolean.TRUE;
+            }
+        }
+
+        return Boolean.FALSE;
+    }
 }

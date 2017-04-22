@@ -2,37 +2,40 @@ package codecaribbean.strategy;
 
 import codecaribbean.command.Command;
 import codecaribbean.entity.Entity;
-import codecaribbean.entity.Mine;
 import codecaribbean.entity.Ship;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.TreeSet;
 
 /**
  * Created by MedBelmahi on 21/04/2017.
  */
 public class DoFire implements PlayStrategy {
 
-    public static final int UNDER_ATTCK_RANG = 10;
+    public static final int UNDER_ATTACK_RANG = 10;
 
-    private Set<Mine> targets = new HashSet<>();
+    private List<? extends Entity> targets;
     private Ship ship;
     private Entity actionTarget;
 
-    public DoFire(Set<Mine> targets, Ship ship) {
+    public DoFire(List<? extends Entity> targets, Ship ship) {
         this.targets = targets;
         this.ship = ship;
     }
 
     @Override
     public Command buildAction() {
-        System.err.printf("do fire");
         return ship.doFire(actionTarget);
     }
 
     @Override
     public Boolean isApplicable() {
+        return applicableFor(this.targets);
+    }
 
-        if (ship.canFire() && !this.targets.isEmpty()) {
+    private Boolean applicableFor(List<? extends Entity> targets) {
+        if (ship.canFire() && !targets.isEmpty()) {
 
             TreeSet<Entity> targetTreeSet = new TreeSet<>(new Comparator<Entity>() {
                 @Override
@@ -41,17 +44,19 @@ public class DoFire implements PlayStrategy {
                 }
             });
 
-            targetTreeSet.addAll(this.targets);
+            targetTreeSet.addAll(targets);
 
-            Entity currentTarget = targetTreeSet.first();
-
-            if (currentTarget.distance(this.ship) < UNDER_ATTCK_RANG) {
-                this.actionTarget = currentTarget;
-
-                return Boolean.TRUE;
+            for (Entity currentTarget : targetTreeSet) {
+                if (currentTarget.distance(this.ship) < UNDER_ATTACK_RANG) {
+                    if (!currentTarget.isUnderAttack()) {
+                        this.actionTarget = currentTarget;
+                        return Boolean.TRUE;
+                    }
+                } else {
+                    return Boolean.FALSE;
+                }
             }
         }
-
         return Boolean.FALSE;
     }
 }

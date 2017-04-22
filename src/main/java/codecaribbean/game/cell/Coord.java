@@ -43,7 +43,7 @@ public class Coord {
         return new CubeCoordinate(xp, yp, zp);
     }
 
-    Coord neighbor(int orientation) {
+    public Coord neighbor(int orientation) {
         int newY, newX;
         if (this.y % 2 == 1) {
             newY = this.y + DIRECTIONS_ODD[orientation][1];

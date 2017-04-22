@@ -2,6 +2,7 @@ package codecaribbean.entity;
 
 import codecaribbean.command.Command;
 import codecaribbean.game.Pirate;
+import codecaribbean.game.cell.Coord;
 
 /**
  * Created by Mohamed BELMAHI on 20/04/2017.
@@ -23,7 +24,12 @@ public class Cannonball extends Entity {
     }
 
     @Override
-    public Command FireMe() {
+    public Command FireMe(Ship ship) {
         return null;
+    }
+
+    public boolean willDestroy(Ship ship) {
+        Coord shipPosition = ship.positionAfter(this.turns);
+        return shipPosition.equals(this.coordinate);
     }
 }
